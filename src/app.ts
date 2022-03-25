@@ -1,142 +1,216 @@
 // Import node modules
 import { getLogger } from 'log4js';
-// Logger initialise
-const logger = getLogger();
-logger.level = '' + 'debug';
+import { readFileSync } from 'fs';
 
+try {
 
-//================================================ Declaration of Object and Dictionary ================================================//
+  // Logger initialise
+  const logger = getLogger();
+  logger.level = '' + 'debug';
 
-const objApartment = {
-  2: {
-    noOfbhk: 2,
-    noOfPeople: 3,
-    consumptionPerMonthInLitres: 900,
-  },
-  3: {
-    noOfbhk: 3,
-    noOfPeople: 5,
-    consumptionPerMonthInLitres: 1500,
-  },
-};
+  //Input Variable
+  // const selectedApartment = 3;
+  // const selectedRatio = '1:5';
+  // const selectedGuest = 10;
+  const selectedApartment = 3;
+  let selectedRatio = '';
+  let selectedGuest = 0;
 
-const dictWaterCostPerLitre = {
-  Corporation: 1,
-  Borewell: 1.5,
-};
+  let isAllotWater = false;
+  let isAddGuests = false;
+  let isBill = false;
 
-const slabs = [
-  {
-    slabLimit: 500,
-    costPetLitres: 2,
-  },
-  {
-    slabLimit: 1500,
-    costPetLitres: 3,
-  },
-  {
-    slabLimit: 3000,
-    costPetLitres: 5,
-  },
-];
+  //==== Reading file contents ====//
 
-function getTankerSlabCostPerLitre(litres:number) {
-  logger.debug(`getTankerSlabCostPerLitre for Litres: ${litres}`);
+  const data = readFileSync('assets/input1.txt', 'utf8');
+  logger.warn(`Read File`);
 
-  let bill = 0;
-  let prevSlabLimit = 0;
+  data.split(/\r?\n/).forEach((line: any) => {
+    // logger.info(`Line from file: ${line}`);
 
-  slabs.forEach((slab) => {
-    let slabDiff = slab.slabLimit - prevSlabLimit;
-    let slabRate = slab.costPetLitres;
+    const arrStr: string = line.split(' ');
+    logger.debug(arrStr);
 
-    if (litres > slabDiff) {
-      litres -= slabDiff;
-      bill += slabDiff * slabRate;
-    } else {
-      bill += litres * slabRate;
-      litres = 0;
+    if (arrStr) {
+      const command = arrStr[0].toLocaleUpperCase();
+      logger.debug(`command: ${command}`);
+
+      switch (command) {
+
+        case 'ALLOT_WATER':
+          isAllotWater = true;
+
+          const apartmentType = +arrStr[1];
+          const ratio = arrStr[2];
+          logger.debug(`apartmentType: ${apartmentType}`);
+          logger.debug(`ratio: ${ratio}`);
+
+          selectedRatio = ratio ? ratio : '1:5';
+
+          break;
+
+        case 'ADD_GUESTS':
+          isAddGuests = true;
+
+          const guestsCount = +arrStr[1];
+          logger.debug(`guestsCount: ${guestsCount}`);
+
+          selectedGuest = guestsCount ? guestsCount : 0;
+
+          break;
+
+        case 'BILL':
+          isBill = true;
+
+          break;
+
+        default: break;
+      }
+
     }
 
-    prevSlabLimit = slab.slabLimit;
+    logger.warn(`selectedApartment:${selectedApartment}`);
+    logger.warn(`selectedRatio:${selectedRatio}`);
+    logger.warn(`selectedGuest:${selectedGuest}`);
+
+
   });
 
-  return bill;
-}
+  //==== Reading file contents ====//
 
-//================================================ Declaration of Object and Dictionary ================================================//
+  //==== Declaration of Constants and Functions ====//
+  const objApartment = {
+    2: {
+      noOfbhk: 2,
+      noOfPeople: 3,
+      consumptionPerMonthInLitres: 900,
+    },
+    3: {
+      noOfbhk: 3,
+      noOfPeople: 5,
+      consumptionPerMonthInLitres: 1500,
+    },
+  };
 
-const keysOfObjApartment = Object.keys(objApartment);
+  const dictWaterCostPerLitre = {
+    Corporation: 1,
+    Borewell: 1.5,
+  };
 
-//Input Variable
-const selectedApartment = 3;
-const selectedRatio = '1:5';
-const selectedGuest = 10;
+  const slabs = [
+    {
+      slabLimit: 500,
+      costPetLitres: 2,
+    },
+    {
+      slabLimit: 1500,
+      costPetLitres: 3,
+    },
+    {
+      slabLimit: 3000,
+      costPetLitres: 5,
+    },
+  ];
 
-// Calc of Ratio
-const arr = selectedRatio.split(':');
-const numCorporation = +arr[0];
-const numBorewell = +arr[1];
+  function getTankerSlabCostPerLitre(litres: number) {
+    logger.debug(`getTankerSlabCostPerLitre for Litres: ${litres}`);
 
-const valBorewell = numBorewell / (numBorewell + numCorporation);
-const valCorporation = numCorporation / (numBorewell + numCorporation);
-// Calc of Ratio
+    let bill = 0;
+    let prevSlabLimit = 0;
 
-// To check Apartment input is valid
-const hasSelectedApartment = keysOfObjApartment.find(
-  (item) => item == '' + selectedApartment
-);
-const isSelectedApartmentValid = hasSelectedApartment ? true : false;
-// To check Apartment input is valid
+    slabs.forEach((slab) => {
+      let slabDiff = slab.slabLimit - prevSlabLimit;
+      let slabRate = slab.costPetLitres;
 
-let errorMessage = '';
-let isError = false;
+      if (litres > slabDiff) {
+        litres -= slabDiff;
+        bill += slabDiff * slabRate;
+      } else {
+        bill += litres * slabRate;
+        litres = 0;
+      }
 
-let calcTotalWaterConsumedInLitres = 0;
-let calcTotalCost = 0;
+      prevSlabLimit = slab.slabLimit;
+    });
 
-if (!isSelectedApartmentValid) {
-  errorMessage = 'Invalid apartment selected';
-  isError = true;
-} else {
-  calcTotalWaterConsumedInLitres =
-    objApartment[selectedApartment].consumptionPerMonthInLitres;
+    return bill;
+  }
 
-  calcTotalCost =
-    calcTotalWaterConsumedInLitres *
+  //==== Declaration of Constants and Functions ====//
+
+  const keysOfObjApartment = Object.keys(objApartment);
+
+  // Calc of Ratio
+  const arr = selectedRatio.split(':');
+  const numCorporation = +arr[0];
+  const numBorewell = +arr[1];
+
+  const valBorewell = numBorewell / (numBorewell + numCorporation);
+  const valCorporation = numCorporation / (numBorewell + numCorporation);
+  // Calc of Ratio
+
+  // To check Apartment input is valid
+  const hasSelectedApartment = keysOfObjApartment.find(
+    (item) => item == '' + selectedApartment
+  );
+  const isSelectedApartmentValid = hasSelectedApartment ? true : false;
+  // To check Apartment input is valid
+
+  let errorMessage = '';
+  let isError = false;
+
+  let calcTotalWaterConsumedInLitres = 0;
+  let calcTotalCost = 0;
+
+  if (!isSelectedApartmentValid) {
+    errorMessage = 'Invalid apartment selected';
+    isError = true;
+  } else {
+
+    calcTotalWaterConsumedInLitres =
+      objApartment[selectedApartment].consumptionPerMonthInLitres;
+
+    calcTotalCost =
+      calcTotalWaterConsumedInLitres *
       valCorporation *
       dictWaterCostPerLitre['Corporation'] +
-    calcTotalWaterConsumedInLitres *
+      calcTotalWaterConsumedInLitres *
       valBorewell *
       dictWaterCostPerLitre['Borewell'];
 
-  // To calc TotalWaterConsumedInLitres w/o Guest
-  logger.info(
-    `calcTotalWaterConsumedInLitres  w/o Guest: ${calcTotalWaterConsumedInLitres}`
-  );
-  // To calc TotalWaterConsumedInLitres w/o Guest
-  logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
+    // To calc TotalWaterConsumedInLitres w/o Guest
+    logger.info(
+      `calcTotalWaterConsumedInLitres  w/o Guest: ${calcTotalWaterConsumedInLitres}`
+    );
+    // To calc TotalWaterConsumedInLitres w/o Guest
+    logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
 
-  // To calc Guest consumption
-  let calcGuestConsumption = selectedGuest * 10 * 30;
-  const calcGuestCost = getTankerSlabCostPerLitre(calcGuestConsumption);
+    // To calc Guest consumption
+    let calcGuestConsumption = selectedGuest * 10 * 30;
+    const calcGuestCost = getTankerSlabCostPerLitre(calcGuestConsumption);
 
-  logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
+    logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
 
-  logger.info(`calcGuestCost: ${calcGuestCost}`);
+    logger.info(`calcGuestCost: ${calcGuestCost}`);
 
-  calcTotalWaterConsumedInLitres =
-    calcTotalWaterConsumedInLitres + calcGuestConsumption;
+    calcTotalWaterConsumedInLitres =
+      calcTotalWaterConsumedInLitres + calcGuestConsumption;
 
-  calcTotalCost = calcTotalCost + calcGuestCost;
+    calcTotalCost = calcTotalCost + calcGuestCost;
+  }
+
+  const totalWaterConsumedInLitres = calcTotalWaterConsumedInLitres;
+  const totalCost = calcTotalCost;
+
+  if (isError) {
+    logger.error(`ERROR : ${errorMessage}`);
+  } else {
+    logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
+    logger.warn(`TOTAL_COST : ${totalCost}`);
+  }
+
+
 }
-
-const totalWaterConsumedInLitres = calcTotalWaterConsumedInLitres;
-const totalCost = calcTotalCost;
-
-if (isError) {
-  logger.error(`ERROR : ${errorMessage}`);
-} else {
-  logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
-  logger.warn(`TOTAL_COST : ${totalCost}`);
+catch (err) {
+  console.error(err)
 }
