@@ -9,15 +9,15 @@ try {
   logger.level = '' + 'debug';
 
   //Input Variable
-  // const selectedApartment = 3;
-  // const selectedRatio = '1:5';
-  // const selectedGuest = 10;
-  const selectedApartment = 3;
+  // const selectedApartment = 2;
+  // const selectedRatio = '3:7';
+  // const selectedGuest = 5;
+
+  let selectedApartment = 0;
   let selectedRatio = '';
   let selectedGuest = 0;
 
   let isAllotWater = false;
-  let isAddGuests = false;
   let isBill = false;
 
   //==== Reading file contents ====//
@@ -38,30 +38,28 @@ try {
       switch (command) {
 
         case 'ALLOT_WATER':
-          isAllotWater = true;
-
           const apartmentType = +arrStr[1];
           const ratio = arrStr[2];
           logger.debug(`apartmentType: ${apartmentType}`);
           logger.debug(`ratio: ${ratio}`);
 
-          selectedRatio = ratio ? ratio : '1:5';
+          selectedApartment = apartmentType ? apartmentType : 2;
+          selectedRatio = ratio ? ratio : '3:7';
 
+          isAllotWater = true;
           break;
 
         case 'ADD_GUESTS':
-          isAddGuests = true;
-
           const guestsCount = +arrStr[1];
           logger.debug(`guestsCount: ${guestsCount}`);
 
-          selectedGuest = guestsCount ? guestsCount : 0;
+          selectedGuest = selectedGuest + guestsCount;
 
           break;
 
         case 'BILL':
-          isBill = true;
 
+          isBill = true;
           break;
 
         default: break;
@@ -72,25 +70,23 @@ try {
     logger.warn(`selectedApartment:${selectedApartment}`);
     logger.warn(`selectedRatio:${selectedRatio}`);
     logger.warn(`selectedGuest:${selectedGuest}`);
-
-
   });
+
+
 
   //==== Reading file contents ====//
 
   //==== Declaration of Constants and Functions ====//
-  const objApartment = {
-    2: {
-      noOfbhk: 2,
-      noOfPeople: 3,
-      consumptionPerMonthInLitres: 900,
-    },
-    3: {
-      noOfbhk: 3,
-      noOfPeople: 5,
-      consumptionPerMonthInLitres: 1500,
-    },
-  };
+  const objApartment = [{
+    noOfbhk: 2,
+    noOfPeople: 3,
+    consumptionPerMonthInLitres: 900,
+  },
+  {
+    noOfbhk: 3,
+    noOfPeople: 5,
+    consumptionPerMonthInLitres: 1500,
+  }];
 
   const dictWaterCostPerLitre = {
     Corporation: 1,
@@ -138,7 +134,8 @@ try {
 
   //==== Declaration of Constants and Functions ====//
 
-  const keysOfObjApartment = Object.keys(objApartment);
+  // const keysOfObjApartment = Object.values(objApartment);
+  // logger.fatal(keysOfObjApartment);
 
   // Calc of Ratio
   const arr = selectedRatio.split(':');
@@ -150,9 +147,10 @@ try {
   // Calc of Ratio
 
   // To check Apartment input is valid
-  const hasSelectedApartment = keysOfObjApartment.find(
-    (item) => item == '' + selectedApartment
-  );
+  const hasSelectedApartment = objApartment.filter(obj => {
+    return obj.noOfbhk === selectedApartment
+  })
+
   const isSelectedApartmentValid = hasSelectedApartment ? true : false;
   // To check Apartment input is valid
 
@@ -167,8 +165,7 @@ try {
     isError = true;
   } else {
 
-    calcTotalWaterConsumedInLitres =
-      objApartment[selectedApartment].consumptionPerMonthInLitres;
+    calcTotalWaterConsumedInLitres = hasSelectedApartment[0].consumptionPerMonthInLitres;
 
     calcTotalCost =
       calcTotalWaterConsumedInLitres *
