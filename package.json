@@ -1,0 +1,16 @@
+{
+  "name": "node-geektrust-water-management",
+  "version": "1.0.0",
+  "description": "Geektrust Assignment of Water Management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "build": "tsc -p tsconfig.json",
+    "watch": "nodemon"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "log4js": "^6.1.2"
+  }
+}
