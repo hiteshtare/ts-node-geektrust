@@ -3,31 +3,30 @@ import { readFileSync } from 'fs';
 
 // Import custom modules
 import { APP_CONFIG } from './config/index';
-import { getBillBySlabCostPerLitre, getLoggerLevel } from './util/common.util';
+import { getBillBySlabCostPerLitre, getLoggerLevel, readInputFile } from './util/common.util';
 
-try {
+// Logger initialise
+const _logger = getLoggerLevel();
 
-  // Logger initialise
-  const _logger = getLoggerLevel();
+//Input Variable
+// const selectedApartment = 2;
+// const selectedRatio = '3:7';
+// const selectedGuest = 5;
 
-  //Input Variable
-  // const selectedApartment = 2;
-  // const selectedRatio = '3:7';
-  // const selectedGuest = 5;
+let selectedApartment = 0;
+let selectedRatio = '';
+let selectedGuest = 0;
 
-  let selectedApartment = 0;
-  let selectedRatio = '';
-  let selectedGuest = 0;
+let isAllotWater = false;
+let isBill = false;
 
-  let isAllotWater = false;
-  let isBill = false;
+//==== Reading file contents ====//
+const path = 'assets/input1.txt';
 
-  //==== Reading file contents ====//
+const result = readInputFile(path);
 
-  const data = readFileSync('assets/input1.txt', 'utf8');
-  _logger.warn(`Read File`);
-
-  data.split(/\r?\n/).forEach((line: any) => {
+if (!result.isError && result.data) {
+  result.data.split(/\r?\n/).forEach((line: any) => {
     // _logger.info(`Line from file: ${line}`);
 
     const arrStr: string = line.split(' ');
@@ -67,86 +66,91 @@ try {
         default: break;
       }
 
-    }
+    }//end of if (arrStr)
 
     _logger.warn(`selectedApartment:${selectedApartment}`);
     _logger.warn(`selectedRatio:${selectedRatio}`);
     _logger.warn(`selectedGuest:${selectedGuest}`);
-  });
+  }); //end of result.data.split(/\r?\n/).forEach((line: any) => {
 
-  //==== Reading file contents ====//
+  if (isAllotWater && isBill) {
+    // Calc of Ratio
+    const arr = selectedRatio.split(':');
+    const numCorporation = +arr[0];
+    const numBorewell = +arr[1];
 
-  // Calc of Ratio
-  const arr = selectedRatio.split(':');
-  const numCorporation = +arr[0];
-  const numBorewell = +arr[1];
+    const valBorewell = numBorewell / (numBorewell + numCorporation);
+    const valCorporation = numCorporation / (numBorewell + numCorporation);
+    // Calc of Ratio
 
-  const valBorewell = numBorewell / (numBorewell + numCorporation);
-  const valCorporation = numCorporation / (numBorewell + numCorporation);
-  // Calc of Ratio
+    // To check Apartment input is valid
+    const hasSelectedApartment = APP_CONFIG.arrApartmentType.filter(obj => {
+      return obj.noOfbhk === selectedApartment
+    })
 
-  // To check Apartment input is valid
-  const hasSelectedApartment = APP_CONFIG.arrApartmentType.filter(obj => {
-    return obj.noOfbhk === selectedApartment
-  })
+    const isSelectedApartmentValid = hasSelectedApartment ? true : false;
+    // To check Apartment input is valid
 
-  const isSelectedApartmentValid = hasSelectedApartment ? true : false;
-  // To check Apartment input is valid
+    let errorMessage = '';
+    let isError = false;
 
-  let errorMessage = '';
-  let isError = false;
+    let calcTotalWaterConsumedInLitres = 0;
+    let calcTotalCost = 0;
 
-  let calcTotalWaterConsumedInLitres = 0;
-  let calcTotalCost = 0;
+    if (!isSelectedApartmentValid) {
+      errorMessage = 'Invalid apartment selected';
+      isError = true;
+    } else {
 
-  if (!isSelectedApartmentValid) {
-    errorMessage = 'Invalid apartment selected';
-    isError = true;
-  } else {
+      calcTotalWaterConsumedInLitres = hasSelectedApartment[0].consumptionPerMonthInLitres;
 
-    calcTotalWaterConsumedInLitres = hasSelectedApartment[0].consumptionPerMonthInLitres;
+      calcTotalCost =
+        calcTotalWaterConsumedInLitres *
+        valCorporation *
+        APP_CONFIG.objWaterType['Corporation'] +
+        calcTotalWaterConsumedInLitres *
+        valBorewell *
+        APP_CONFIG.objWaterType['Borewell'];
 
-    calcTotalCost =
-      calcTotalWaterConsumedInLitres *
-      valCorporation *
-      APP_CONFIG.objWaterType['Corporation'] +
-      calcTotalWaterConsumedInLitres *
-      valBorewell *
-      APP_CONFIG.objWaterType['Borewell'];
+      // To calc TotalWaterConsumedInLitres w/o Guest
+      _logger.info(
+        `calcTotalWaterConsumedInLitres  w/o Guest: ${calcTotalWaterConsumedInLitres}`
+      );
+      // To calc TotalWaterConsumedInLitres w/o Guest
+      _logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
 
-    // To calc TotalWaterConsumedInLitres w/o Guest
-    _logger.info(
-      `calcTotalWaterConsumedInLitres  w/o Guest: ${calcTotalWaterConsumedInLitres}`
-    );
-    // To calc TotalWaterConsumedInLitres w/o Guest
-    _logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
+      // To calc Guest consumption
+      let calcGuestConsumption = selectedGuest * 10 * 30;
+      const calcGuestCost = getBillBySlabCostPerLitre(calcGuestConsumption);
 
-    // To calc Guest consumption
-    let calcGuestConsumption = selectedGuest * 10 * 30;
-    const calcGuestCost = getBillBySlabCostPerLitre(calcGuestConsumption);
+      _logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
 
-    _logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
+      _logger.info(`calcGuestCost: ${calcGuestCost}`);
 
-    _logger.info(`calcGuestCost: ${calcGuestCost}`);
+      calcTotalWaterConsumedInLitres =
+        calcTotalWaterConsumedInLitres + calcGuestConsumption;
 
-    calcTotalWaterConsumedInLitres =
-      calcTotalWaterConsumedInLitres + calcGuestConsumption;
+      calcTotalCost = calcTotalCost + calcGuestCost;
+    }
 
-    calcTotalCost = calcTotalCost + calcGuestCost;
+    const totalWaterConsumedInLitres = calcTotalWaterConsumedInLitres;
+    const totalCost = calcTotalCost;
+
+    if (isError) {
+      _logger.error(`ERROR : ${errorMessage}`);
+    } else {
+      _logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
+      _logger.warn(`TOTAL_COST : ${totalCost}`);
+    }
   }
+  else if (!isAllotWater && isBill) {
+    _logger.error('Command: ALLOT_WATER not found.')
 
-  const totalWaterConsumedInLitres = calcTotalWaterConsumedInLitres;
-  const totalCost = calcTotalCost;
-
-  if (isError) {
-    _logger.error(`ERROR : ${errorMessage}`);
-  } else {
-    _logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
-    _logger.warn(`TOTAL_COST : ${totalCost}`);
   }
-
-
+  else if (!isBill && isAllotWater) {
+    _logger.error('Command: BILL not found.')
+  }
 }
-catch (err) {
-  console.error(err)
+else {
+  _logger.error('Invalid File path')
 }

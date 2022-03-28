@@ -11,9 +11,5 @@
     "allowJs": true, //for injecting any js lib
     "strict": true
   },
-  "files": [
-    "./src/app.ts",
-    "./src/config/index.ts",
-    "./src/util/common.util.ts"
-  ]
+  "files": ["src/app.ts", "./src/config/index.ts", "./src/util/common.util.ts"]
 }

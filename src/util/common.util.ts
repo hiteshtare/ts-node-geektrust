@@ -1,4 +1,5 @@
 // Import node modules
+import { readFileSync } from 'fs';
 import { getLogger, Logger } from 'log4js';
 
 // Import custom modules
@@ -35,4 +36,24 @@ export function getBillBySlabCostPerLitre(litres: number) {
   });
 
   return bill;
+}
+
+export function readInputFile(filePath: string) {
+  _logger.debug(`readInputFile for Path: ${filePath}`);
+
+  try {
+    const fileData = readFileSync(filePath, 'utf8');
+
+    return {
+      isError: false,
+      data: fileData
+    }
+  }
+  catch (err) {
+    _logger.error(err)
+    return {
+      isError: true,
+      data: undefined
+    }
+  }
 }
