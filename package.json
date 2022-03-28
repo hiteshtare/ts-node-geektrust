@@ -4,7 +4,7 @@
   "description": "Geektrust Assignment of Water Management",
   "main": "geektrust.js",
   "scripts": {
-    "start": "node geektrust.js",
+    "start": "node geektrust",
     "build": "tsc -p tsconfig.json",
     "watch": "nodemon"
   },
