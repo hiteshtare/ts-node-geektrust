@@ -1,4 +1,6 @@
 export const APP_CONFIG = {
+  loggerLevel: 'debug',
+  //Constants
   arrApartmentType: [{
     noOfbhk: 2,
     noOfPeople: 3,

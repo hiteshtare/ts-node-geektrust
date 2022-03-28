@@ -1,13 +1,14 @@
-import { APP_CONFIG } from './config/index';
 // Import node modules
-import { getLogger } from 'log4js';
 import { readFileSync } from 'fs';
+
+// Import custom modules
+import { APP_CONFIG } from './config/index';
+import { getBillBySlabCostPerLitre, getLoggerLevel } from './util/common.util';
 
 try {
 
   // Logger initialise
-  const logger = getLogger();
-  logger.level = '' + 'debug';
+  const _logger = getLoggerLevel();
 
   //Input Variable
   // const selectedApartment = 2;
@@ -24,25 +25,25 @@ try {
   //==== Reading file contents ====//
 
   const data = readFileSync('assets/input1.txt', 'utf8');
-  logger.warn(`Read File`);
+  _logger.warn(`Read File`);
 
   data.split(/\r?\n/).forEach((line: any) => {
-    // logger.info(`Line from file: ${line}`);
+    // _logger.info(`Line from file: ${line}`);
 
     const arrStr: string = line.split(' ');
-    logger.debug(arrStr);
+    _logger.debug(arrStr);
 
     if (arrStr) {
       const command = arrStr[0].toLocaleUpperCase();
-      logger.debug(`command: ${command}`);
+      _logger.debug(`command: ${command}`);
 
       switch (command) {
 
         case 'ALLOT_WATER':
           const apartmentType = +arrStr[1];
           const ratio = arrStr[2];
-          logger.debug(`apartmentType: ${apartmentType}`);
-          logger.debug(`ratio: ${ratio}`);
+          _logger.debug(`apartmentType: ${apartmentType}`);
+          _logger.debug(`ratio: ${ratio}`);
 
           selectedApartment = apartmentType ? apartmentType : 2;
           selectedRatio = ratio ? ratio : '3:7';
@@ -52,7 +53,7 @@ try {
 
         case 'ADD_GUESTS':
           const guestsCount = +arrStr[1];
-          logger.debug(`guestsCount: ${guestsCount}`);
+          _logger.debug(`guestsCount: ${guestsCount}`);
 
           selectedGuest = selectedGuest + guestsCount;
 
@@ -68,41 +69,12 @@ try {
 
     }
 
-    logger.warn(`selectedApartment:${selectedApartment}`);
-    logger.warn(`selectedRatio:${selectedRatio}`);
-    logger.warn(`selectedGuest:${selectedGuest}`);
+    _logger.warn(`selectedApartment:${selectedApartment}`);
+    _logger.warn(`selectedRatio:${selectedRatio}`);
+    _logger.warn(`selectedGuest:${selectedGuest}`);
   });
 
-
-
   //==== Reading file contents ====//
-
-  //==== Declaration of Constants and Functions ====//
-  function getTankerSlabCostPerLitre(litres: number) {
-    logger.debug(`getTankerSlabCostPerLitre for Litres: ${litres}`);
-
-    let bill = 0;
-    let prevSlabLimit = 0;
-
-    APP_CONFIG.arrSlabRates.forEach((slab) => {
-      let slabDiff = slab.slabLimit - prevSlabLimit;
-      let slabRate = slab.costPetLitres;
-
-      if (litres > slabDiff) {
-        litres -= slabDiff;
-        bill += slabDiff * slabRate;
-      } else {
-        bill += litres * slabRate;
-        litres = 0;
-      }
-
-      prevSlabLimit = slab.slabLimit;
-    });
-
-    return bill;
-  }
-
-  //==== Declaration of Constants and Functions ====//
 
   // Calc of Ratio
   const arr = selectedRatio.split(':');
@@ -143,19 +115,19 @@ try {
       APP_CONFIG.objWaterType['Borewell'];
 
     // To calc TotalWaterConsumedInLitres w/o Guest
-    logger.info(
+    _logger.info(
       `calcTotalWaterConsumedInLitres  w/o Guest: ${calcTotalWaterConsumedInLitres}`
     );
     // To calc TotalWaterConsumedInLitres w/o Guest
-    logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
+    _logger.info(`calcTotalCost  w/o Guest: ${calcTotalCost}`);
 
     // To calc Guest consumption
     let calcGuestConsumption = selectedGuest * 10 * 30;
-    const calcGuestCost = getTankerSlabCostPerLitre(calcGuestConsumption);
+    const calcGuestCost = getBillBySlabCostPerLitre(calcGuestConsumption);
 
-    logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
+    _logger.info(`calcGuestConsumption: ${calcGuestConsumption}`);
 
-    logger.info(`calcGuestCost: ${calcGuestCost}`);
+    _logger.info(`calcGuestCost: ${calcGuestCost}`);
 
     calcTotalWaterConsumedInLitres =
       calcTotalWaterConsumedInLitres + calcGuestConsumption;
@@ -167,10 +139,10 @@ try {
   const totalCost = calcTotalCost;
 
   if (isError) {
-    logger.error(`ERROR : ${errorMessage}`);
+    _logger.error(`ERROR : ${errorMessage}`);
   } else {
-    logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
-    logger.warn(`TOTAL_COST : ${totalCost}`);
+    _logger.warn(`TOTAL_WATER_CONSUMED_IN_LITERS : ${totalWaterConsumedInLitres}`);
+    _logger.warn(`TOTAL_COST : ${totalCost}`);
   }
 
 

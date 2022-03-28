@@ -12,6 +12,8 @@
     "strict": true
   },
   "files": [
-    "./src/app.ts"
+    "./src/app.ts",
+    "./src/config/index.ts",
+    "./src/util/common.util.ts"
   ]
 }
