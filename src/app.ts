@@ -1,3 +1,4 @@
+import { APP_CONFIG } from './config/index';
 // Import node modules
 import { getLogger } from 'log4js';
 import { readFileSync } from 'fs';
@@ -77,44 +78,13 @@ try {
   //==== Reading file contents ====//
 
   //==== Declaration of Constants and Functions ====//
-  const objApartment = [{
-    noOfbhk: 2,
-    noOfPeople: 3,
-    consumptionPerMonthInLitres: 900,
-  },
-  {
-    noOfbhk: 3,
-    noOfPeople: 5,
-    consumptionPerMonthInLitres: 1500,
-  }];
-
-  const dictWaterCostPerLitre = {
-    Corporation: 1,
-    Borewell: 1.5,
-  };
-
-  const slabs = [
-    {
-      slabLimit: 500,
-      costPetLitres: 2,
-    },
-    {
-      slabLimit: 1500,
-      costPetLitres: 3,
-    },
-    {
-      slabLimit: 3000,
-      costPetLitres: 5,
-    },
-  ];
-
   function getTankerSlabCostPerLitre(litres: number) {
     logger.debug(`getTankerSlabCostPerLitre for Litres: ${litres}`);
 
     let bill = 0;
     let prevSlabLimit = 0;
 
-    slabs.forEach((slab) => {
+    APP_CONFIG.arrSlabRates.forEach((slab) => {
       let slabDiff = slab.slabLimit - prevSlabLimit;
       let slabRate = slab.costPetLitres;
 
@@ -134,9 +104,6 @@ try {
 
   //==== Declaration of Constants and Functions ====//
 
-  // const keysOfObjApartment = Object.values(objApartment);
-  // logger.fatal(keysOfObjApartment);
-
   // Calc of Ratio
   const arr = selectedRatio.split(':');
   const numCorporation = +arr[0];
@@ -147,7 +114,7 @@ try {
   // Calc of Ratio
 
   // To check Apartment input is valid
-  const hasSelectedApartment = objApartment.filter(obj => {
+  const hasSelectedApartment = APP_CONFIG.arrApartmentType.filter(obj => {
     return obj.noOfbhk === selectedApartment
   })
 
@@ -170,10 +137,10 @@ try {
     calcTotalCost =
       calcTotalWaterConsumedInLitres *
       valCorporation *
-      dictWaterCostPerLitre['Corporation'] +
+      APP_CONFIG.objWaterType['Corporation'] +
       calcTotalWaterConsumedInLitres *
       valBorewell *
-      dictWaterCostPerLitre['Borewell'];
+      APP_CONFIG.objWaterType['Borewell'];
 
     // To calc TotalWaterConsumedInLitres w/o Guest
     logger.info(
