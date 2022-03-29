@@ -5,7 +5,7 @@
   "main": "geektrust.js",
   "scripts": {
     "install": "tsc -p tsconfig.json",
-    "start": "node geektrust",
+    "start": "node geektrust assets/input1.txt",
     "watch": "nodemon"
   },
   "author": "",

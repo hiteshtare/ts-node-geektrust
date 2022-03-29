@@ -21,9 +21,10 @@ let isAllotWater = false;
 let isBill = false;
 
 //==== Reading file contents ====//
-const path = 'assets/input1.txt';
+// const path = 'assets/input1.txt';
+const filename = process.argv[2];
 
-const result = readInputFile(path);
+const result = readInputFile(filename);
 
 if (!result.isError && result.data) {
   result.data.split(/\r?\n/).forEach((line: any) => {

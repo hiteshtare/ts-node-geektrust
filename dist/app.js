@@ -8,8 +8,8 @@ let selectedRatio = '';
 let selectedGuest = 0;
 let isAllotWater = false;
 let isBill = false;
-const path = 'assets/input1.txt';
-const result = (0, common_util_1.readInputFile)(path);
+const filename = process.argv[2];
+const result = (0, common_util_1.readInputFile)(filename);
 if (!result.isError && result.data) {
     result.data.split(/\r?\n/).forEach((line) => {
         const arrStr = line.split(' ');
